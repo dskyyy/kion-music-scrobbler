@@ -1,0 +1,12 @@
+{
+  "bracketSpacing": true,
+  "printWidth": 100,
+  "singleQuote": true,
+  "semi": false,
+  "endOfLine": "lf",
+  "plugins": ["prettier-plugin-tailwindcss", "@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["<THIRD_PARTY_MODULES>", "^[./]", "\\.(css|scss|less)$"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderParserPlugins": ["typescript", "decorators-legacy"]
+}

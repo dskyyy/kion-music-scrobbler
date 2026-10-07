@@ -1,0 +1,9 @@
+.idea
+dist
+.output
+.wxt
+node_modules
+*.zip
+.env
+.env.*
+*.log

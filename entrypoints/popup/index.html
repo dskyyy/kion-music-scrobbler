@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KION Music Scrobbler</title>
+  </head>
+  <body>
+    <div class="w-[360px] p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h1 class="text-base font-bold">KION Music Scrobbler</h1>
+        <span id="status" class="badge badge-ghost">…</span>
+      </div>
+
+      <!-- Auth -->
+      <div class="card bg-base-200 mb-3">
+        <div class="card-body gap-2 p-3">
+          <div id="whoami" class="text-sm opacity-70">Не подключено</div>
+          <div id="keyFields" class="flex flex-col gap-2">
+            <label class="form-control">
+              <span class="label-text text-xs">Last.fm API key</span>
+              <input
+                id="apiKey"
+                type="text"
+                class="input input-bordered input-sm w-full"
+                placeholder="API key"
+                autocomplete="off"
+              />
+            </label>
+            <label class="form-control">
+              <span class="label-text text-xs">Shared secret</span>
+              <input
+                id="apiSecret"
+                type="password"
+                class="input input-bordered input-sm w-full"
+                placeholder="Shared secret"
+                autocomplete="off"
+              />
+            </label>
+            <button id="btnLogin" class="btn btn-primary btn-sm w-full">Войти</button>
+          </div>
+          <div id="authWaiting" class="hidden flex-col gap-2">
+            <div class="flex items-center gap-2 text-sm">
+              <span class="loading loading-spinner loading-sm"></span>
+              <span>Подтвердите вход во вкладке Last.fm…</span>
+            </div>
+            <div class="flex gap-2">
+              <button id="btnCheckNow" class="btn btn-sm flex-1">Проверить сейчас</button>
+              <button id="btnCancel" class="btn btn-ghost btn-sm">Отмена</button>
+            </div>
+          </div>
+          <button id="btnLogout" class="btn btn-ghost btn-sm hidden w-full">Выйти</button>
+          <div id="authError" class="text-error text-xs"></div>
+        </div>
+      </div>
+
+      <!-- Threshold: applies immediately, no submit button -->
+      <div class="card bg-base-200 mb-3">
+        <div class="card-body gap-2 p-3">
+          <div class="flex items-center justify-between">
+            <label for="threshold" class="text-sm font-medium">Считать прослушанным от</label>
+            <span class="badge badge-primary"><span id="thresholdVal">50</span>%</span>
+          </div>
+          <input
+            id="threshold"
+            type="range"
+            min="10"
+            max="100"
+            step="5"
+            value="50"
+            class="range range-primary range-sm"
+          />
+          <div class="text-xs opacity-60">
+            Применяется сразу. Треки короче 30 сек не скробблятся (правило Last.fm).
+          </div>
+        </div>
+      </div>
+
+      <!-- Offline queue: hidden while empty -->
+      <div id="dbgRow" class="mb-1 text-xs opacity-70">
+        Диагностика: <span id="dbgLine">—</span>
+      </div>
+      <div id="queueSection">
+        <div class="mb-2 flex items-center justify-between">
+          <h2 class="text-sm font-medium">
+            Очередь на синхронизацию (<span id="queueCount">0</span>)
+          </h2>
+        </div>
+        <ul
+          id="queue"
+          class="divide-base-300 border-base-300 mb-3 max-h-64 divide-y overflow-auto rounded-lg border text-sm"
+        ></ul>
+        <div class="flex gap-2">
+          <button id="btnSync" class="btn btn-sm flex-1">Синхронизировать</button>
+          <button id="btnClear" class="btn btn-ghost btn-sm">Очистить</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
