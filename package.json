@@ -1,6 +1,6 @@
 {
   "name": "kion-music-scrobbler",
-  "version": "2026.10",
+  "version": "2026.10.1",
   "private": true,
   "description": "Scrobble music.mts.ru to Last.fm",
   "packageManager": "pnpm@9.12.0",
