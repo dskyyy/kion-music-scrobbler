@@ -16,10 +16,12 @@ import {
   apiKeyItem,
   apiSecretItem,
   authErrorItem,
+  blockedArtistsItem,
   clearQueue,
   debugItem,
   dequeueCount,
   enqueueTracks,
+  isArtistBlocked,
   pendingAuthItem,
   queueItem,
   sessionKeyItem,
@@ -161,6 +163,26 @@ function noteInvalid(reason: string): void {
   }
   lastInvalidWarnAt = now
   logWarn('drop invalid input', reason)
+}
+
+let lastFilterLogAt = 0
+
+/** Filter skip: logs the artist name, throttled to one line per minute. */
+function noteFiltered(artist: string): void {
+  const now = Date.now()
+  if (now - lastFilterLogAt < 60000) {
+    return
+  }
+  lastFilterLogAt = now
+  logInfo(`${artist} skipped by filter`)
+}
+
+async function isBlockedArtist(artist: string): Promise<boolean> {
+  const blocked = (await blockedArtistsItem.getValue()) ?? []
+  if (blocked.length === 0) {
+    return false
+  }
+  return isArtistBlocked(artist, blocked)
 }
 
 function cleanText(value: unknown): string | null {
@@ -491,6 +513,13 @@ async function onNowPlaying(
   }
   const key = trackKey(meta.artist, meta.track)
   const now = Math.floor(Date.now() / 1000)
+  // User blocklist: skip entirely, never send Now Playing.
+  if (await isBlockedArtist(meta.artist)) {
+    current = null
+    debugLog('skipped by filter', meta.artist, '—', meta.track)
+    noteFiltered(meta.artist)
+    return
+  }
   // Same track re-announced (SPA re-render) — ignore.
   if (current?.key === key) {
     return
@@ -555,6 +584,11 @@ async function onProgress(
     const cleanTime = times.currentTime
     const cleanDuration = times.duration
     const key = trackKey(meta.artist, meta.track)
+    if (await isBlockedArtist(meta.artist)) {
+      debugLog('skipped by filter', meta.artist, '—', meta.track)
+      noteFiltered(meta.artist)
+      return
+    }
     if (!current || current.key !== key) {
       // Missed NOW_PLAYING (e.g. SW was asleep) — reconstruct.
       await onNowPlaying(meta.artist, meta.track, meta.album, cleanDuration)

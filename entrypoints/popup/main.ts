@@ -1,12 +1,15 @@
 ﻿import { browser } from 'wxt/browser'
 
 import {
+  addBlockedArtist,
   apiKeyItem,
   apiSecretItem,
   authErrorItem,
+  blockedArtistsItem,
   debugItem,
   pendingAuthItem,
   queueItem,
+  removeBlockedArtist,
   sessionKeyItem,
   statusItem,
   thresholdItem,
@@ -50,7 +53,7 @@ function fmtTime(ts: number): string {
 }
 
 async function renderAll(): Promise<void> {
-  const [apiKey, secret, username, sk, threshold, queue, status, pending, authErrorText] =
+  const [apiKey, secret, username, sk, threshold, queue, status, pending, authErrorText, blocked] =
     await Promise.all([
       apiKeyItem.getValue(),
       apiSecretItem.getValue(),
@@ -61,6 +64,7 @@ async function renderAll(): Promise<void> {
       statusItem.getValue(),
       pendingAuthItem.getValue(),
       authErrorItem.getValue(),
+      blockedArtistsItem.getValue(),
     ])
   // Diagnostics row exists in dev builds only.
   let dbg: DebugInfo | null = null
@@ -81,6 +85,32 @@ async function renderAll(): Promise<void> {
   }
   thresholdInput.value = String(threshold ?? 50)
   $('thresholdVal').textContent = String(threshold ?? 50)
+
+  const blockedList = $('blockedList')
+  blockedList.innerHTML = ''
+  const names = blocked ?? []
+  if (names.length === 0) {
+    const li = document.createElement('li')
+    li.className = 'opacity-60'
+    li.textContent = 'Список пуст'
+    blockedList.appendChild(li)
+  } else {
+    for (const name of names) {
+      const li = document.createElement('li')
+      li.className = 'flex items-center justify-between gap-2'
+      const label = document.createElement('span')
+      label.className = 'min-w-0 flex-1 truncate'
+      label.textContent = name
+      const remove = document.createElement('button')
+      remove.className = 'btn btn-ghost btn-xs'
+      remove.textContent = '✕'
+      remove.setAttribute('data-artist', name)
+      remove.setAttribute('aria-label', `Убрать ${name}`)
+      li.appendChild(label)
+      li.appendChild(remove)
+      blockedList.appendChild(li)
+    }
+  }
 
   const loggedIn = Boolean(sk && username)
   const waiting = !loggedIn && pending != null
@@ -262,6 +292,38 @@ function init(): void {
       return
     }
     await renderAll()
+  })
+
+  const blockedInput = $('blockedInput') as HTMLInputElement
+  const addBlocked = async (): Promise<void> => {
+    const value = blockedInput.value.trim()
+    if (!value) {
+      return
+    }
+    await addBlockedArtist(value)
+    blockedInput.value = ''
+    await renderAll()
+    blockedInput.focus()
+  }
+  $('btnAddBlocked').addEventListener('click', () => {
+    void addBlocked()
+  })
+  blockedInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      void addBlocked()
+    }
+  })
+  $('blockedList').addEventListener('click', (e) => {
+    const target = e.target as HTMLElement | null
+    const btn = target?.closest('button[data-artist]') as HTMLButtonElement | null
+    if (!btn) {
+      return
+    }
+    const name = btn.getAttribute('data-artist') ?? ''
+    if (!name) {
+      return
+    }
+    void removeBlockedArtist(name).then(() => renderAll())
   })
 
   browser.storage.onChanged.addListener(() => {

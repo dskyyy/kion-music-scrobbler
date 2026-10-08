@@ -76,6 +76,25 @@
         </div>
       </div>
 
+      <!-- Blocked artists: never scrobbled -->
+      <div class="card bg-base-200 mb-3">
+        <div class="card-body gap-2 p-3">
+          <div class="text-sm font-medium">Не скробблить исполнителей</div>
+          <div class="join w-full">
+            <input
+              id="blockedInput"
+              type="text"
+              class="input input-bordered input-success input-sm join-item flex-1"
+              placeholder="Название группы"
+              autocomplete="off"
+            />
+            <button id="btnAddBlocked" class="btn btn-success btn-sm join-item">Добавить</button>
+          </div>
+          <ul id="blockedList" class="flex flex-col gap-1 text-sm"></ul>
+          <div class="text-xs opacity-60">Совпадение точное, регистр не важен.</div>
+        </div>
+      </div>
+
       <!-- Offline queue: hidden while empty -->
       <div id="dbgRow" class="mb-1 text-xs opacity-70">
         Диагностика: <span id="dbgLine">—</span>
