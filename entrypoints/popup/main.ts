@@ -114,10 +114,19 @@ async function renderAll(): Promise<void> {
 
   const loggedIn = Boolean(sk && username)
   const waiting = !loggedIn && pending != null
+  const whoami = $('whoami')
+  whoami.innerHTML = ''
   if (loggedIn) {
-    $('whoami').textContent = `Подключено как ${username}`
+    whoami.append('Подключено как ')
+    const profile = document.createElement('a')
+    profile.className = 'link'
+    profile.textContent = username ?? ''
+    profile.href = `https://www.last.fm/user/${encodeURIComponent(username ?? '')}`
+    profile.target = '_blank'
+    profile.rel = 'noopener noreferrer'
+    whoami.append(profile)
   } else {
-    $('whoami').textContent = 'Не подключено'
+    whoami.textContent = 'Не подключено'
   }
   // Key fields only make sense before login; logout only after login.
   setShown($('keyFields'), !loggedIn && !waiting, true)
