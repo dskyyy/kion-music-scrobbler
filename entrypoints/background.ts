@@ -24,6 +24,7 @@ import {
   enqueueTracks,
   isArtistBlocked,
   pendingAuthItem,
+  pruneStaleTracks,
   queueItem,
   sessionKeyItem,
   statusItem,
@@ -331,6 +332,15 @@ async function flushQueue(): Promise<{ sent: number; left: number }> {
   }
   flushInFlight = true
   try {
+    // Drop scrobbles Last.fm would ignore (timestamp too old), even offline,
+    // so the badge never counts phantom entries.
+    const stored = (await queueItem.getValue()) ?? []
+    const fresh = pruneStaleTracks(stored, Math.floor(Date.now() / 1000))
+    if (fresh.length !== stored.length) {
+      await queueItem.setValue(fresh)
+      logInfo('queue pruned', { dropped: stored.length - fresh.length })
+      await refreshIcon()
+    }
     const creds = await credentials()
     if (!creds) {
       const left = ((await queueItem.getValue()) ?? []).length

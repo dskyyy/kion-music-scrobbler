@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   LASTFM_INVALID_SESSION,
+  LASTFM_RATE_LIMITED,
   LASTFM_SERVICE_OFFLINE,
   LASTFM_TEMPORARY_ERROR,
   LASTFM_TOKEN_INVALID,
@@ -38,6 +39,13 @@ describe('LastfmError', () => {
   it('marks service offline and temporary errors retryable', () => {
     expect(new LastfmError(LASTFM_SERVICE_OFFLINE, 'x').retryable).toBe(true)
     expect(new LastfmError(LASTFM_TEMPORARY_ERROR, 'x').retryable).toBe(true)
+  })
+
+  it('marks rate limiting retryable without needing auth', () => {
+    const err = new LastfmError(LASTFM_RATE_LIMITED, 'x')
+    expect(err.code).toBe(LASTFM_RATE_LIMITED)
+    expect(err.retryable).toBe(true)
+    expect(err.needAuth).toBe(false)
   })
 
   it('marks invalid sessions as needing auth', () => {

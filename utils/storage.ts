@@ -1,6 +1,6 @@
 import { storage } from 'wxt/utils/storage'
 
-import { DEFAULT_THRESHOLD, MAX_QUEUE } from './types'
+import { DEFAULT_THRESHOLD, MAX_QUEUE, MAX_QUEUE_AGE_SEC } from './types'
 import type { ConnStatus, DebugInfo, PendingAuth, QueuedTrack } from './types'
 
 export const thresholdItem = storage.defineItem<number>('local:threshold', {
@@ -45,6 +45,14 @@ export async function enqueueTracks(items: QueuedTrack[]): Promise<QueuedTrack[]
   const capped = merged.slice(-MAX_QUEUE)
   await queueItem.setValue(capped)
   return capped
+}
+
+/**
+ * Drop queued tracks older than MAX_QUEUE_AGE_SEC. Pure: callers persist the result.
+ * The exact age boundary is kept (only strictly older entries are dropped).
+ */
+export function pruneStaleTracks(tracks: QueuedTrack[], nowSec: number): QueuedTrack[] {
+  return tracks.filter((t) => nowSec - t.timestamp <= MAX_QUEUE_AGE_SEC)
 }
 
 /** Remove first `count` tracks after successful batch sync. */

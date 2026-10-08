@@ -12,6 +12,7 @@ export const LASTFM_SERVICE_OFFLINE = 11
 export const LASTFM_TOKEN_UNAUTHORIZED = 14
 export const LASTFM_TOKEN_EXPIRED = 15
 export const LASTFM_TEMPORARY_ERROR = 16
+export const LASTFM_RATE_LIMITED = 29
 
 export class LastfmError extends Error {
   code: number | 'network'
@@ -24,7 +25,10 @@ export class LastfmError extends Error {
     super(message)
     this.code = code
     this.retryable =
-      code === 'network' || code === LASTFM_SERVICE_OFFLINE || code === LASTFM_TEMPORARY_ERROR
+      code === 'network' ||
+      code === LASTFM_SERVICE_OFFLINE ||
+      code === LASTFM_TEMPORARY_ERROR ||
+      code === LASTFM_RATE_LIMITED
     this.needAuth = code === LASTFM_INVALID_SESSION
   }
 }

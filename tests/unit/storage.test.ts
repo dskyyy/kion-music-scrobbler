@@ -9,9 +9,11 @@ import {
   enqueueTracks,
   isArtistBlocked,
   normalizeArtistName,
+  pruneStaleTracks,
   queueItem,
   removeBlockedArtist,
 } from '../../utils/storage'
+import { MAX_QUEUE_AGE_SEC } from '../../utils/types'
 import type { QueuedTrack } from '../../utils/types'
 
 function track(artist: string, index: number): QueuedTrack {
@@ -141,5 +143,26 @@ describe('offline queue', () => {
     await enqueueTracks([track('a', 1)])
     await clearQueue()
     await expect(queueItem.getValue()).resolves.toEqual([])
+  })
+})
+
+describe('pruneStaleTracks', () => {
+  const NOW = 1700000000
+
+  it('drops entries older than 7 days', () => {
+    const aged = [
+      { ...track('old', 1), timestamp: NOW - MAX_QUEUE_AGE_SEC - 1 },
+      { ...track('fresh', 2), timestamp: NOW },
+    ]
+    expect(pruneStaleTracks(aged, NOW).map((t) => t.artist)).toEqual(['fresh'])
+  })
+
+  it('keeps the exact 7-day boundary', () => {
+    const aged = [{ ...track('edge', 1), timestamp: NOW - MAX_QUEUE_AGE_SEC }]
+    expect(pruneStaleTracks(aged, NOW)).toHaveLength(1)
+  })
+
+  it('passes through an empty queue', () => {
+    expect(pruneStaleTracks([], NOW)).toEqual([])
   })
 })

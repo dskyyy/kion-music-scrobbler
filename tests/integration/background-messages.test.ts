@@ -6,14 +6,15 @@ import {
   apiKeyItem,
   apiSecretItem,
   blockedArtistsItem,
+  queueItem,
   sessionKeyItem,
   usernameItem,
 } from '../../utils/storage'
-import type { ContentMessage } from '../../utils/types'
+import type { ContentMessage, PopupMessage } from '../../utils/types'
 
 const fetchMock = vi.fn()
 
-async function send(message: ContentMessage): Promise<void> {
+async function send(message: ContentMessage | PopupMessage): Promise<void> {
   await fakeBrowser.runtime.onMessage.trigger(message, {})
   await new Promise((resolve) => {
     setTimeout(resolve, 0)
@@ -93,6 +94,15 @@ describe('background message wiring', () => {
       currentTime: 60,
       duration: 200,
     })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('prunes stale queue entries on sync without sending them', async () => {
+    await logIn()
+    const stale = Math.floor(Date.now() / 1000) - 8 * 24 * 3600
+    await queueItem.setValue([{ artist: 'Old Band', track: 'Old Song', timestamp: stale }])
+    await send({ type: 'SYNC_NOW' })
+    await expect(queueItem.getValue()).resolves.toEqual([])
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })

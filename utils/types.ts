@@ -60,5 +60,7 @@ export interface DebugInfo {
 }
 
 export const MAX_QUEUE = 1000
+/** Queued scrobbles older than this are pruned at flush (Last.fm ignores them). */
+export const MAX_QUEUE_AGE_SEC = 7 * 24 * 3600
 export const DEFAULT_THRESHOLD = 50
 export const RETRY_MINUTES = 5
