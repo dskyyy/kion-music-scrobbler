@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { fakeBrowser } from 'wxt/testing'
 
 import {
   addBlockedArtist,
@@ -13,32 +14,12 @@ import {
 } from '../../utils/storage'
 import type { QueuedTrack } from '../../utils/types'
 
-const store = vi.hoisted(() => new Map<string, unknown>())
-
-vi.mock('wxt/utils/storage', () => {
-  return {
-    storage: {
-      defineItem: (key: string, options: { defaultValue: unknown }) => {
-        if (!store.has(key)) {
-          store.set(key, options.defaultValue)
-        }
-        return {
-          getValue: async () => store.get(key),
-          setValue: async (value: unknown) => {
-            store.set(key, value)
-          },
-        }
-      },
-    },
-  }
-})
-
 function track(artist: string, index: number): QueuedTrack {
   return { artist, track: `track ${index}`, timestamp: 1700000000 + index }
 }
 
 beforeEach(() => {
-  store.clear()
+  fakeBrowser.reset()
 })
 
 describe('normalizeArtistName', () => {

@@ -19,7 +19,8 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "icons": "node scripts/make-icons.mjs assets/icon-source.png"
+    "icons": "node scripts/make-icons.mjs assets/icon-source.png",
+    "postinstall": "wxt prepare"
   },
   "dependencies": {
     "blueimp-md5": "^2.19.0"
