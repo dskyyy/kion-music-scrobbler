@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser'
 
+import { badgeTextFor } from '../utils/badge'
 import {
   LASTFM_TOKEN_EXPIRED,
   LASTFM_TOKEN_INVALID,
@@ -31,6 +32,13 @@ import {
 } from '../utils/storage'
 import { RETRY_MINUTES } from '../utils/types'
 import type { ContentMessage, DebugInfo, PopupMessage, QueuedTrack } from '../utils/types'
+import {
+  MAX_DURATION_SEC,
+  sanitizeMeta,
+  sanitizeTimes,
+  sanitizeTimestamp,
+  trackKey,
+} from '../utils/validation'
 
 const RETRY_ALARM = 'kion-retry'
 const AUTH_ALARM = 'kion-auth-poll'
@@ -146,14 +154,6 @@ const OFFLINE_ICON = {
   128: 'icon-offline-128.png',
 }
 
-function trackKey(artist: string, track: string): string {
-  return `${artist.toLowerCase()}|${track.toLowerCase()}`
-}
-
-const MAX_TEXT_LEN = 256
-const MAX_DURATION_SEC = 12 * 3600
-const MAX_TRACK_AGE_SEC = 30 * 24 * 3600
-
 let lastInvalidWarnAt = 0
 
 function noteInvalid(reason: string): void {
@@ -185,73 +185,6 @@ async function isBlockedArtist(artist: string): Promise<boolean> {
   return isArtistBlocked(artist, blocked)
 }
 
-function cleanText(value: unknown): string | null {
-  if (typeof value !== 'string') {
-    return null
-  }
-  const cleaned = value.trim().replace(/[\u0000-\u001F\u007F]/g, '')
-  if (!cleaned) {
-    return null
-  }
-  if (cleaned.length > MAX_TEXT_LEN) {
-    return cleaned.slice(0, MAX_TEXT_LEN)
-  }
-  return cleaned
-}
-
-function sanitizeMeta(
-  artist: unknown,
-  track: unknown,
-  album?: unknown,
-): { artist: string; track: string; album?: string } | null {
-  const a = cleanText(artist)
-  const t = cleanText(track)
-  if (!a || !t) {
-    return null
-  }
-  if (album === undefined) {
-    return { artist: a, track: t }
-  }
-  const al = cleanText(album)
-  if (al) {
-    return { artist: a, track: t, album: al }
-  }
-  return { artist: a, track: t }
-}
-
-function sanitizeTimes(
-  currentTime: unknown,
-  duration: unknown,
-): { currentTime: number; duration: number } | null {
-  if (!Number.isFinite(currentTime) || !Number.isFinite(duration)) {
-    return null
-  }
-  const ct = currentTime as number
-  const d = duration as number
-  if (d <= 0 || d > MAX_DURATION_SEC) {
-    return null
-  }
-  if (ct < 0 || ct > d) {
-    return null
-  }
-  return { currentTime: ct, duration: d }
-}
-
-function sanitizeTimestamp(ts: unknown): number | null {
-  if (!Number.isFinite(ts)) {
-    return null
-  }
-  const now = Math.floor(Date.now() / 1000)
-  let value = Math.floor(ts as number)
-  if (value > now + 60) {
-    value = now
-  }
-  if (value < now - MAX_TRACK_AGE_SEC) {
-    return null
-  }
-  return value
-}
-
 type ToolbarApi = typeof browser.action
 
 function toolbar(): ToolbarApi {
@@ -263,29 +196,6 @@ function toolbar(): ToolbarApi {
     return withAction.action
   }
   return withAction.browserAction as ToolbarApi
-}
-
-function countSuffix(count: number): string {
-  if (count > 99) {
-    return '99+'
-  }
-  return String(count)
-}
-
-function badgeTextFor(count: number, reason: 'offline' | 'needAuth' | 'ok'): string {
-  if (reason === 'ok') {
-    return ''
-  }
-  if (reason === 'needAuth') {
-    if (count > 0) {
-      return `?${countSuffix(count)}`
-    }
-    return '?'
-  }
-  if (count > 0) {
-    return countSuffix(count)
-  }
-  return '!'
 }
 
 async function setOnline(): Promise<void> {

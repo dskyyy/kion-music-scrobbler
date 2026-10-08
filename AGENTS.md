@@ -15,12 +15,14 @@ pnpm build:firefox      # сборка Firefox в каталог .output/
 pnpm zip                # архив Chrome для каталога расширений
 pnpm zip:firefox        # архивы Firefox для каталога дополнений
 pnpm typecheck          # проверка типов
+pnpm test               # unit-тесты Vitest
+pnpm test:watch         # unit-тесты в watch-режиме
 pnpm format:check       # проверка форматирования
 pnpm lint               # проверка линтером
 pnpm icons              # пересобрать иконки из assets/icon-source.png
 ```
 
-Порядок проверок перед завершением работы: сначала актуализировать `README.md` и `AGENTS.md` в том же наборе правок, если менялись поведение, селекторы, манифест или API. Затем `format`, затем `lint`, затем `typecheck`, затем `build` и `build:firefox`.
+Порядок проверок перед завершением работы: сначала актуализировать `README.md` и `AGENTS.md` в том же наборе правок, если менялись поведение, селекторы, манифест или API. Затем `format`, затем `lint`, затем `typecheck`, затем `test`, затем `build` и `build:firefox`.
 
 Новые зависимости устанавливать командой `pnpm add -Dw <pkg>`. Флаг `-Dw` обязателен. Причина описана в пункте 2 раздела «Важные замечания».
 
