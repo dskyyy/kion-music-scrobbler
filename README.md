@@ -95,3 +95,7 @@ assets/icon-source.png   # исходник иконки
 ## Имена
 
 Отображаемое имя — `KION Music Scrobbler`. Package id — `kion-music-scrobbler`. Gecko id — `kion-music-scrobbler@local`.
+
+<p align="center">
+  <img src="assets/ai-bullshit.png" alt="Нейрослоп" width="180" />
+</p>
