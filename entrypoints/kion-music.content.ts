@@ -7,29 +7,21 @@ import type { ContentMessage } from '../utils/types'
  * Battery-friendly: event-driven (audio events + debounced MutationObserver),
  * only a 5s safety poll while actually playing.
  *
- * Priority: MediaSession metadata -> <audio> + DOM -> document.title.
- * music.mts.ru is a Next.js SPA, selectors may change — candidates below
- * are best-effort and intentionally generic.
+ * Priority: MediaSession metadata -> data-testid DOM -> document.title.
+ * Only stable data-testid hooks are used (CSS-module class hashes change
+ * between site builds, so class selectors are forbidden).
  */
 
 const TITLE_SELECTORS = [
   '[data-testid="player-track-title"]',
   '[data-testid="track-title"]',
   '[data-testid="player-title"]',
-  '.player__title',
-  '[class*="Player_title"]',
-  '[class*="player"] [class*="title"]',
-  '[class*="Track_title"]',
 ]
 
 const ARTIST_SELECTORS = [
   '[data-testid="player-track-artist"]',
   '[data-testid="track-artist"]',
   '[data-testid="player-artist"]',
-  '.player__artist',
-  '[class*="Player_artist"]',
-  '[class*="player"] [class*="artist"]',
-  '[class*="Track_artist"]',
 ]
 
 function textOf(selectors: string[]): string {
@@ -123,12 +115,6 @@ function usableAudio(): HTMLAudioElement | null {
   return null
 }
 
-const PLAYER_ROOT_SELECTORS = [
-  '[data-testid*="player" i]',
-  '[class*="Player"]',
-  '[class*="player"]',
-]
-const TIME_PAIR_RE = /(\d{1,3}):([0-5]\d)\s*\/\s*(\d{1,3}):([0-5]\d)/g
 const CLOCK_RE = /^(?:(\d+):)?([0-5]?\d):([0-5]\d)$/
 
 /** "mm:ss" or "h:mm:ss" → seconds. Null when not a clock reading. */
@@ -153,45 +139,19 @@ function validTime(elapsed: number, total: number): boolean {
 
 /**
  * Elapsed/total seconds of the player's time counter.
- * Primary: stable data-testid hooks (CSS-module class hashes change between
- * site builds, so classes are never used). Fallback: legacy "mm:ss / mm:ss"
- * scan for other page variants.
+ * Only stable data-testid hooks are read (CSS-module class hashes change
+ * between site builds, so class selectors are forbidden).
  */
 function readDomTime(): { elapsed: number; total: number } | null {
   const elapsedEl = document.querySelector('[data-testid="player-current-time"]')
   const totalEl = document.querySelector('[data-testid="player-full-time"]')
-  if (elapsedEl && totalEl) {
-    const elapsed = parseClock(elapsedEl.textContent ?? '')
-    const total = parseClock(totalEl.textContent ?? '')
-    if (elapsed != null && total != null && validTime(elapsed, total)) {
-      return { elapsed, total }
-    }
-  }
-  const scan = (text: string): { elapsed: number; total: number } | null => {
-    for (const m of text.matchAll(TIME_PAIR_RE)) {
-      const elapsed = Number(m[1]) * 60 + Number(m[2])
-      const total = Number(m[3]) * 60 + Number(m[4])
-      if (validTime(elapsed, total)) {
-        return { elapsed, total }
-      }
-    }
+  if (!elapsedEl || !totalEl) {
     return null
   }
-  for (const sel of PLAYER_ROOT_SELECTORS) {
-    try {
-      const els = document.querySelectorAll(sel)
-      for (const el of els) {
-        const t = scan(el.textContent ?? '')
-        if (t) {
-          return t
-        }
-      }
-    } catch {
-      // invalid selector — skip
-    }
-  }
-  if (document.body) {
-    return scan(document.body.textContent ?? '')
+  const elapsed = parseClock(elapsedEl.textContent ?? '')
+  const total = parseClock(totalEl.textContent ?? '')
+  if (elapsed != null && total != null && validTime(elapsed, total)) {
+    return { elapsed, total }
   }
   return null
 }
@@ -411,6 +371,8 @@ export default defineContentScript({
       audio.addEventListener('timeupdate', reportProgress)
       audio.addEventListener('ended', () => {
         lastProgressSent = 0
+        lastKey = ''
+        send({ type: 'STOPPED' })
       })
     }
 

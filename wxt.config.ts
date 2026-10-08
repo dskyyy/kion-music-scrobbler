@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'wxt'
 
-// Single codebase -> chrome-mv3 + firefox-mv3
+// Single codebase -> chrome-mv3 + firefox-mv2 (WXT default for Firefox)
 export default defineConfig({
   vite: () => ({
     plugins: [tailwindcss()],

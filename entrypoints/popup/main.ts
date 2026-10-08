@@ -116,21 +116,20 @@ async function renderAll(): Promise<void> {
   const count = queue?.length ?? 0
   $('queueCount').textContent = String(count)
   setShown($('queueSection'), count > 0)
-  badge.className = 'badge'
   if (loggedIn && (status === 'ok' || status === 'idle') && count === 0) {
-    badge.classList.add('badge-success')
+    badge.className = 'badge badge-soft badge-success'
     badge.textContent = 'OK'
   } else if (!loggedIn && waiting) {
-    badge.classList.add('badge-info')
+    badge.className = 'badge badge-soft badge-info'
     badge.textContent = 'Вход…'
   } else if (status === 'needAuth' || (!loggedIn && count > 0)) {
-    badge.classList.add('badge-warning')
+    badge.className = 'badge badge-soft badge-warning'
     badge.textContent = 'Нужен вход'
   } else if (count > 0 || status === 'offline') {
-    badge.classList.add('badge-warning')
+    badge.className = 'badge badge-soft badge-warning'
     badge.textContent = `Офлайн · ${count}`
   } else {
-    badge.classList.add('badge-ghost')
+    badge.className = 'badge badge-soft badge-ghost'
     if (loggedIn) {
       badge.textContent = 'OK'
     } else {
@@ -165,6 +164,15 @@ async function wakeBackground(): Promise<void> {
   await browser.runtime.sendMessage({ type: 'SETTINGS_CHANGED' }).catch(() => {})
 }
 
+/** Briefly show an error text on a button when the background is unreachable. */
+function flashButton(btn: HTMLButtonElement, text: string): void {
+  const prev = btn.textContent
+  btn.textContent = text
+  setTimeout(() => {
+    btn.textContent = prev
+  }, 2000)
+}
+
 function init(): void {
   // Diagnostics row exists in dev builds only.
   setShown($('dbgRow'), import.meta.env.DEV)
@@ -196,7 +204,9 @@ function init(): void {
     await apiKeyItem.setValue(apiKey)
     await apiSecretItem.setValue(secret)
     // Background issues the token, opens last.fm and polls for approval.
-    await browser.runtime.sendMessage({ type: 'AUTH_START' }).catch(() => {})
+    await browser.runtime.sendMessage({ type: 'AUTH_START' }).catch(() => {
+      void authErrorItem.setValue('Не удалось связаться с фоном. Откройте попап ещё раз.')
+    })
     await renderAll()
   })
 
@@ -221,7 +231,14 @@ function init(): void {
     const btn = e.currentTarget as HTMLButtonElement
     btn.disabled = true
     try {
-      await browser.runtime.sendMessage({ type: 'SYNC_NOW' }).catch(() => {})
+      let failed = false
+      await browser.runtime.sendMessage({ type: 'SYNC_NOW' }).catch(() => {
+        failed = true
+      })
+      if (failed) {
+        flashButton(btn, 'Нет связи с фоном')
+        return
+      }
       // Give background a moment to flush, then re-render.
       setTimeout(() => {
         void renderAll()
@@ -231,11 +248,19 @@ function init(): void {
     }
   })
 
-  $('btnClear').addEventListener('click', async () => {
+  $('btnClear').addEventListener('click', async (e) => {
     if (!window.confirm('Очистить очередь из нескроббленных треков?')) {
       return
     }
-    await browser.runtime.sendMessage({ type: 'CLEAR_QUEUE' }).catch(() => {})
+    const btn = e.currentTarget as HTMLButtonElement
+    let failed = false
+    await browser.runtime.sendMessage({ type: 'CLEAR_QUEUE' }).catch(() => {
+      failed = true
+    })
+    if (failed) {
+      flashButton(btn, 'Нет связи с фоном')
+      return
+    }
     await renderAll()
   })
 
@@ -244,19 +269,12 @@ function init(): void {
   })
 
   // Fast path: user approved on last.fm and reopened the popup — complete immediately.
+  // Background keeps polling via alarm; no timer here to avoid rate limits.
   void pendingAuthItem.getValue().then((pending) => {
     if (pending) {
       void browser.runtime.sendMessage({ type: 'AUTH_CHECK_NOW' }).catch(() => {})
     }
   })
-  // Live update while the popup is open during pending auth.
-  setInterval(() => {
-    void pendingAuthItem.getValue().then((pending) => {
-      if (pending) {
-        void browser.runtime.sendMessage({ type: 'AUTH_CHECK_NOW' }).catch(() => {})
-      }
-    })
-  }, 3000)
 
   void renderAll()
 }

@@ -180,6 +180,9 @@ export async function scrobbleOne(
   if (item.album) {
     fields.album = item.album
   }
+  if (item.duration && item.duration > 0) {
+    fields.duration = String(Math.round(item.duration))
+  }
   return sendScrobbleFields(apiKey, secret, sessionKey, fields)
 }
 
@@ -198,6 +201,9 @@ export async function scrobbleBatch(
     fields[`timestamp[${i}]`] = String(t.timestamp)
     if (t.album) {
       fields[`album[${i}]`] = t.album
+    }
+    if (t.duration && t.duration > 0) {
+      fields[`duration[${i}]`] = String(Math.round(t.duration))
     }
   })
   return sendScrobbleFields(apiKey, secret, sessionKey, fields)
