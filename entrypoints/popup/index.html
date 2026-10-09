@@ -14,7 +14,7 @@
 
       <!-- Auth -->
       <div class="card bg-base-200 mb-3 shadow">
-        <div class="card-body gap-2 p-3">
+        <div class="card-body gap-4 p-3">
           <div id="whoami" class="text-sm opacity-70">Не подключено</div>
           <div id="keyFields" class="flex flex-col gap-2">
             <label class="form-control">
@@ -37,7 +37,7 @@
                 autocomplete="off"
               />
             </label>
-            <button id="btnLogin" class="btn btn-soft btn-success btn-sm w-full">Войти</button>
+            <button id="btnLogin" class="btn btn-soft btn-sm w-full">Войти</button>
           </div>
           <div id="authWaiting" class="hidden flex-col gap-2">
             <div class="flex items-center gap-2 text-sm">
@@ -45,20 +45,18 @@
               <span>Подтвердите вход во вкладке Last.fm…</span>
             </div>
             <div class="flex gap-2">
-              <button id="btnCheckNow" class="btn btn-soft btn-sm flex-1">Проверить сейчас</button>
+              <button id="btnCheckNow" class="btn btn-soft btn-sm flex-1">Проверить</button>
               <button id="btnCancel" class="btn btn-soft btn-sm">Отмена</button>
             </div>
           </div>
-          <button id="btnLogout" class="btn btn-soft btn-success btn-sm hidden w-full">
-            Выйти
-          </button>
+          <button id="btnLogout" class="btn btn-soft btn-sm hidden w-full">Выйти</button>
           <div id="authError" class="text-error text-xs"></div>
         </div>
       </div>
 
       <!-- Threshold: applies immediately, no submit button -->
       <div class="card bg-base-200 mb-3 shadow">
-        <div class="card-body gap-2 p-3">
+        <div class="card-body gap-4 p-3">
           <div class="flex items-center justify-between">
             <label for="threshold" class="text-sm font-medium">Считать прослушанным от</label>
             <span class="badge badge-soft badge-success"><span id="thresholdVal">50</span>%</span>
@@ -70,7 +68,7 @@
             max="100"
             step="5"
             value="50"
-            class="range range-success range-sm"
+            class="range range-sm"
           />
           <div class="text-xs opacity-60">
             Треки короче 30 сек не скробблятся по правилам Last.fm
@@ -80,19 +78,17 @@
 
       <!-- Blocked artists: never scrobbled -->
       <div class="card bg-base-200 mb-3 shadow">
-        <div class="card-body gap-2 p-3">
+        <div class="card-body gap-4 p-3">
           <div class="text-sm font-medium">Исключения</div>
           <div class="join w-full">
             <input
               id="blockedInput"
               type="text"
-              class="input input-bordered input-success input-sm join-item flex-1"
+              class="input input-bordered input-sm join-item flex-1"
               placeholder="Название группы"
               autocomplete="off"
             />
-            <button id="btnAddBlocked" class="btn btn-soft btn-success btn-sm join-item">
-              Добавить
-            </button>
+            <button id="btnAddBlocked" class="btn btn-soft btn-sm join-item">Добавить</button>
           </div>
           <ul id="blockedList" class="flex flex-col gap-1 text-sm"></ul>
           <div class="text-xs opacity-60">Совпадение точное, регистр не важен</div>
@@ -113,7 +109,7 @@
           id="queue"
           class="divide-base-300 border-base-300 mb-3 max-h-64 divide-y overflow-auto rounded-lg border text-sm"
         ></ul>
-        <div class="flex gap-2">
+        <div class="flex gap-4">
           <button id="btnSync" class="btn btn-soft btn-sm flex-1">Синхронизировать</button>
           <button id="btnClear" class="btn btn-soft btn-sm">Очистить</button>
         </div>

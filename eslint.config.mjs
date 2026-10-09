@@ -13,12 +13,21 @@ export default tseslint.config(
   eslintConfigPrettier,
   {
     files: ['**/*.ts'],
+    extends: [tseslint.configs.base],
     languageOptions: {
       parser: tseslint.parser,
     },
     rules: {
       curly: ['error', 'all'],
       'no-ternary': 'error',
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
+      'prefer-const': 'error',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { fixStyle: 'separate-type-imports' },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
     },
   },
   {
@@ -26,6 +35,8 @@ export default tseslint.config(
     rules: {
       curly: ['error', 'all'],
       'no-ternary': 'error',
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
+      'prefer-const': 'error',
     },
   },
 )
