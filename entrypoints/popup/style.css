@@ -1,2 +1,13 @@
 @import 'tailwindcss';
 @plugin "daisyui";
+
+:root {
+  --radius-selector: 1rem;
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}

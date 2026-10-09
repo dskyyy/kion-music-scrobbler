@@ -102,7 +102,7 @@ async function renderAll(): Promise<void> {
       label.className = 'min-w-0 flex-1 truncate'
       label.textContent = name
       const remove = document.createElement('button')
-      remove.className = 'btn btn-ghost btn-xs'
+      remove.className = 'btn btn-soft btn-xs'
       remove.textContent = '✕'
       remove.setAttribute('data-artist', name)
       remove.setAttribute('aria-label', `Убрать ${name}`)
@@ -117,7 +117,7 @@ async function renderAll(): Promise<void> {
   const whoami = $('whoami')
   whoami.innerHTML = ''
   if (loggedIn) {
-    whoami.append('Подключено как ')
+    whoami.append('Авторизовано как ')
     const profile = document.createElement('a')
     profile.className = 'link'
     profile.textContent = username ?? ''
